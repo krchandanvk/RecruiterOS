@@ -7,7 +7,8 @@ const globalForPrisma = globalThis as unknown as {
 };
 
 const getDb = () => {
-  const absoluteDbPath = path.join(process.cwd(), "prisma", "dev.db");
+  // Use dev.db in the project root to match prisma.config.ts resolution
+  const absoluteDbPath = path.join(process.cwd(), "dev.db");
   const dbUri = `file:${absoluteDbPath}`;
   const adapter = new PrismaBetterSqlite3({ url: dbUri });
   return new PrismaClient({ adapter });
