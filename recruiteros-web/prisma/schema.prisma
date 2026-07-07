@@ -1,0 +1,147 @@
+datasource db {
+  provider = "sqlite"
+}
+
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/client"
+}
+
+model Candidate {
+  id                  String                  @id @default(uuid())
+  linkedinUrl        String                  @unique
+  fullName           String
+  headline           String?
+  about              String?
+  industry           String?
+  currentCompany     String?
+  currentDesignation String?
+  location           String?
+  country            String?
+  followersCount     Int?
+  connectionsCount   Int?
+  openToWork         Boolean                 @default(false)
+  profilePhotoUrl    String?
+  rawJson            String?                 // Stored raw candidate JSON string
+  candidateSummary   String?
+  technicalSummary   String?
+  experienceSummary  String?
+  bestSuitableRoles  String?                 // JSON array string
+  candidateScore     Int?
+  profileCompleteness Int?
+  createdAt          DateTime                @default(now())
+  updatedAt          DateTime                @updatedAt
+  experiences        CandidateExperience[]
+  education          CandidateEducation[]
+  certifications     CandidateCertification[]
+  projects           CandidateProject[]
+  skills             CandidateSkill[]
+  emails             CandidateEmail[]
+  notes              CandidateNote[]
+}
+
+model CandidateExperience {
+  id             String    @id @default(uuid())
+  candidateId    String
+  candidate      Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  company        String
+  designation    String
+  employmentType String?
+  startDate      String?
+  endDate        String?
+  duration       String?
+  location       String?
+  description    String?
+  createdAt      DateTime  @default(now())
+}
+
+model CandidateEducation {
+  id          String    @id @default(uuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  institute   String
+  degree      String?
+  branch      String?
+  startYear   Int?
+  endYear     Int?
+  grade       String?
+  description String?
+  createdAt   DateTime  @default(now())
+}
+
+model CandidateCertification {
+  id                  String    @id @default(uuid())
+  candidateId         String
+  candidate           Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name                String
+  issuingOrganization String
+  issueDate           String?
+  expiryDate          String?
+  credentialId        String?
+  credentialUrl       String?
+  createdAt           DateTime  @default(now())
+}
+
+model CandidateProject {
+  id          String    @id @default(uuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  name                String
+  description String?
+  technology  String?
+  duration    String?
+  createdAt   DateTime  @default(now())
+}
+
+model CandidateSkill {
+  id          String    @id @default(uuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  skillName   String
+  category    String    // Backend, Frontend, Cloud, AI, DevOps, Database, Testing, Mobile, Security, Other
+  createdAt   DateTime  @default(now())
+}
+
+model CandidateEmail {
+  id           String    @id @default(uuid())
+  candidateId  String
+  candidate    Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  email        String
+  isPrimary    Boolean   @default(false)
+  confidence   String?
+  verified     Boolean   @default(false)
+  source       String    @default("Prog.AI")
+  githubUrl    String?
+  portfolioUrl String?
+  websiteUrl   String?
+  createdAt    DateTime  @default(now())
+}
+
+model CandidateNote {
+  id          String    @id @default(uuid())
+  candidateId String
+  candidate   Candidate @relation(fields: [candidateId], references: [id], onDelete: Cascade)
+  noteContent String
+  createdAt   DateTime  @default(now())
+  updatedAt   DateTime  @updatedAt
+}
+
+model ProcessingQueue {
+  id           String    @id @default(uuid())
+  linkedinUrl  String    @unique
+  status       String    // PENDING, RUNNING, COMPLETED, FAILED, RETRY, SKIPPED
+  errorMessage String?
+  retryCount   Int       @default(0)
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+}
+
+model AgentControl {
+  id              Int       @id @default(1)
+  status          String    @default("stopped") // running, paused, stopped
+  currentQueueId  String?
+  lastHeartbeat   DateTime?
+  progressPercent Int       @default(0)
+  eta             DateTime?
+  updatedAt       DateTime  @updatedAt
+}
